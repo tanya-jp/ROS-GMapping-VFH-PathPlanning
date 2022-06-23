@@ -1,0 +1,3 @@
+string obstacle_name
+float64 distance
+int32 min_distance_index

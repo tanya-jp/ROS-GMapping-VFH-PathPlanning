@@ -1,0 +1,5 @@
+string dir_name
+string obstacle_name
+---
+float64[] ranges
+float64 distance

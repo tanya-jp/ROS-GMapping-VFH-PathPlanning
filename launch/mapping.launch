@@ -1,0 +1,21 @@
+<launch>
+
+    <!-- <node pkg="final_project" type="distance_calculator_lidar_service.py" name="distance_calculator_lidar_service" output="screen"></node> -->
+    <!-- <node pkg="final_project" type="wall_follower_controller.py" name="wall_follower_controller" output="screen"></node> -->
+    <node pkg="final_project" type="follow_maze.py" name="follow_maze" output="screen"></node>
+    
+    <!-- <node pkg="final_project" type="wall_follower_controller.py" name="wall_follower_controller" output="screen"></node> -->
+
+    <include file="$(find turtlebot3_slam)/launch/turtlebot3_slam.launch"></include>
+    <!-- <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen"></node> -->
+
+    <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_funky_maze.launch">
+        <arg name="x_pos" value="0"/>
+        <arg name="y_pos" value="0"/>
+        <arg name="z_pos" value="0"/>
+    </include>
+
+    <!-- <include file="$(find turtlebot_rviz_launchers)/launch/view_robot.launch"/> -->
+
+
+</launch>
