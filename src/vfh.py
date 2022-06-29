@@ -56,12 +56,21 @@ class Controller:
             print("Service call failed: %s"%e)
          
     def find_steering_direction(self, hk_prime):
-        valleys = argrelextrema(np.array(hk_prime), lambda a,b: a<self.VFH_THRESHOLD)[0]
+        valleys = []
+        for element in hk_prime:
+            if element < self.VFH_THRESHOLD:
+                valleys.append(element)
+        
+        prev_element = 0
+        for element in valleys:
+            if element == prev_element + 1:
+                
+            
         print(f"@@@@@@@@@@@@@@@@@@@@{hk_prime}")
         print(f"@@@@@@@@@@@@@@@@@@@@{valleys}")
         print(f"@@@@@@@@@@@@@@@@@@@@{type(valleys)}")
         print("---------------------------------------------------------------------------")
-                
+        
 
     def calculate_vfh(self, laser_ranges):
         if len(laser_ranges) == 0:
