@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from copy import copy, deepcopy
 from math import inf
 import rospy
 import matplotlib.pyplot as plt
@@ -26,7 +27,7 @@ class Controller:
         self.VFH_L = int(rospy.get_param("/vfh/vfh_l"))
         self.VFH_SECTOR_K = int(rospy.get_param("/vfh/vfh_sector_k"))
         self.VFH_S_MAX = int(rospy.get_param("/vfh/vfh_s_max"))
-        self.VFH_THRESHOLD = rospy.get_param("/vfh/vfh_s_max")
+        self.VFH_THRESHOLD = rospy.get_param("/vfh/vfh_threshold")
 
         
         self.VFH_A = rospy.get_param("/vfh/vfh_a")
@@ -44,9 +45,7 @@ class Controller:
             req.obstacle_name = ''
             
             get_data = rospy.ServiceProxy('/get_distance', GetDistance)
-            # rospy.loginfo("koosskessshhhh")
             resp = get_data(req)
-            # rospy.loginfo("BABA BIKHIAL KOOOONI")
             if len(resp.ranges) == 0:
                 return
 
@@ -55,21 +54,46 @@ class Controller:
         except rospy.ServiceException as e:
             print("Service call failed: %s"%e)
          
-    def find_steering_direction(self, hk_prime):
-        valleys = []
-        for element in hk_prime:
-            if element < self.VFH_THRESHOLD:
-                valleys.append(element)
-        
-        prev_element = 0
-        for element in valleys:
-            if element == prev_element + 1:
-                
+    def find_valleys(self, hk_prime):
+        print(hk_prime)
+        valleys_idx = []
+        for i in range(len(hk_prime)):
+            if hk_prime[i] < self.VFH_THRESHOLD:
+                valleys_idx.append(i)
             
-        print(f"@@@@@@@@@@@@@@@@@@@@{hk_prime}")
-        print(f"@@@@@@@@@@@@@@@@@@@@{valleys}")
-        print(f"@@@@@@@@@@@@@@@@@@@@{type(valleys)}")
+        valleys = []
+        vall = []
+
+        i = 0
+        while i < len(valleys_idx):
+            while i < len(valleys_idx) and valleys_idx[i] == (valleys_idx[i-1])%len(hk_prime) + 1:
+                print(f"####{i} {len(valleys_idx)}")
+                vall.append(valleys_idx[i])
+                i += 1
+            
+            if len(vall) > 0:
+                valleys.append(deepcopy(vall))
+                vall.clear()
+                if i >= len(valleys_idx):
+                    break
+            vall.append(valleys_idx[i])
+            i += 1
+        
+        if len(valleys) >= 2:
+            val_begin = valleys[0]
+            val_end = valleys[len(valleys)-1]
+            if (val_end[len(val_end)-1] + 1)%len(hk_prime) == val_begin[0]:
+                val_begin = val_end + val_begin  
+                valleys[0] = val_begin
+                valleys.pop(len(valleys)-1)
+            
+        print(f":)))))))))))))))))|| {valleys}")
+            
+        # print(f"@@@@@@@@@@@@@@@@@@@@{hk_prime}")
+        # print(f"@@@@@@@@@@@@@@@@@@@@{valleys}")
+        # print(f"@@@@@@@@@@@@@@@@@@@@{type(valleys)}")
         print("---------------------------------------------------------------------------")
+        return valleys
         
 
     def calculate_vfh(self, laser_ranges):
@@ -90,7 +114,7 @@ class Controller:
             # rospy.loginfo(v)
             hk_prime.append(sum(v)/len(v))
         
-        self.find_steering_direction(hk_prime)        
+        valleys = self.find_valleys(hk_prime)        
          
     
         
