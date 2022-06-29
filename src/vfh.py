@@ -94,7 +94,11 @@ class Controller:
         # print(f"@@@@@@@@@@@@@@@@@@@@{type(valleys)}")
         print("---------------------------------------------------------------------------")
         return valleys
-        
+       
+       
+    def find_steering_direction(self, valleys):
+        pass
+    
 
     def calculate_vfh(self, laser_ranges):
         if len(laser_ranges) == 0:
@@ -115,8 +119,8 @@ class Controller:
             hk_prime.append(sum(v)/len(v))
         
         valleys = self.find_valleys(hk_prime)        
-         
-    
+        self.find_steering_direction(valleys)         
+
         
     def navigate_to_point(self):
         while True:
