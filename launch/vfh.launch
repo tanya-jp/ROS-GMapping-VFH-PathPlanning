@@ -2,21 +2,21 @@
     
     <node pkg="final_project" type="distance_calculator_lidar_service.py" name="distance_calculator_lidar_service" output="screen"></node>
     <node pkg="final_project" type="vfh.py" name="vfh" output="screen">
-        <param name="goal_x" value="8.0" />
+        <param name="goal_x" value="-8.0" />
         <param name="goal_y" value="-8.0" />
-        <param name="vfh_window_size" value="-8.0" />
+        <param name="vfh_window_size" value="10.0" />
         <param name="vfh_l" value="2" />
         <param name="vfh_sector_k" value="5.0" />
-        <param name="vfh_s_max" value="18" />
-        <param name="vfh_threshold" value="0.5" />
+        <param name="vfh_s_max" value="0" />
+        <param name="vfh_threshold" value="0.35" />
         
         <param name="vfh_a" value="1.0" />
         <param name="vfh_b" value="0.25" />
     </node>
 
     <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_funky_maze.launch">
-        <arg name="x_pos" value="0"/>
-        <arg name="y_pos" value="8"/>
+        <arg name="x_pos" value="0.0"/>
+        <arg name="y_pos" value="8.0"/>
         <!-- <arg name="z_pos" value="0"/> -->
     </include>
 
