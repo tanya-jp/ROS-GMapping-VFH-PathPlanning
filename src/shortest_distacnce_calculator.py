@@ -22,10 +22,10 @@ class Graph:
     def add_edge(self, u, v, weight):
         self.edges[u][v] = weight
         self.edges[v][u] = weight
+        
     
     def dijkstra(graph, start_vertex, res):
       D = {v:float('inf') for v in range(graph.v)}
-      # print(D)
       D[start_vertex] = 0
 
       pq = PriorityQueue()
@@ -65,6 +65,8 @@ class ReadMap():
         self.free_cells = np.zeros([self.height, self.width])
         self.nodes = {}
         self.pixel_nodes_num = {}
+        self.graph = []
+        self.pq = []
 
     def get_pix_value(self):
         for i in range(self.height):
@@ -95,16 +97,21 @@ class ReadMap():
         d = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
         return float(d)
 
-    def go_up(self, start_x, start_y):
+    def go_up(self, start_x, start_y, start):
         j = start_y
-        while(self.free_cells[start_x][j] >0 and self.height-1>j>0):
-            j +=1
-            # flag +=1
-        mian_d = abs(j - start_y)
-        y = start_y+mian_d//2
-        end_point = [start_x, y]
-        d = abs(y - start_y)
-        return end_point, d, mian_d
+        if start:
+            while(self.free_cells[start_x][j] != 0 and self.height-1>j>0):    
+                j +=1
+        else:
+            while(self.free_cells[start_x][j] >0 and self.height-1>j>0):
+                j +=1
+        y =  j-1
+        if y > start_y:
+            end_point = [start_x, y]
+            d = abs(y - start_y)
+            return end_point, d
+        else:
+            return 0, 0
     
     def go_down(self, start_x, start_y):
         j = start_y
@@ -116,16 +123,22 @@ class ReadMap():
         d = abs(j - start_y)
         return end_point, d
     
-    def go_right(self, start_x, start_y):
+    def go_right(self, start_x, start_y, start=False):
         i = start_x
-        while(self.free_cells[i][start_y] >0 and self.width-1>i>0):
-            i +=1
+        if start:
+            while(self.free_cells[i][start_y] != 0 and self.width-1>i>0):
+                i +=1
 
-        mian_d = abs(i - start_x)
-        x = start_x+mian_d//2
-        end_point = [x, start_y]
-        d = abs(x - start_x)
-        return end_point, d, mian_d
+        else:
+            while(self.free_cells[i][start_y] >0 and self.width-1>i>0):
+                i +=1
+        x = i-1
+        if x > start_x:
+            end_point = [x, start_y]
+            d = abs(x - start_x)
+            return end_point, d
+        else:
+            return 0, 0
     
     def go_left(self, start_x, start_y):
         i = start_x
@@ -137,94 +150,178 @@ class ReadMap():
         d = abs(i - start_x)
         return end_point, d
 
-    def create_graph(self, start_x_pixel, start_y_pixel):
+    def add_to_graph(self, start_point, end_point, node_num):
+        s_p =[]
+        s_p.append(int(start_point[0]))
+        s_p.append(int(start_point[1]))
+        e_p = []
+        e_p.append(int(end_point[0]))
+        e_p.append(int(end_point[1]))
+        if not str(s_p) in self.pixel_nodes_num:
+            self.nodes[node_num] = s_p
+            self.pixel_nodes_num[str(s_p)] = node_num
+            node_num += 1 
+        if not str(e_p) in self.pixel_nodes_num:
+            self.nodes[node_num] = e_p
+            self.pixel_nodes_num[str(e_p)] = node_num
+            node_num += 1
+        return node_num 
 
-        # horizontal_graph=[]
-        # vertical_graph = []
-        graph = []
+    def create_graph(self, start_x_pixel, start_y_pixel, 
+    goal_x_pixel, goal_y_pixel):
         node_num = 0
+        start_point = [int(start_x_pixel), int(start_y_pixel)]
+        end_point_r, d_r = self.go_right(start_x_pixel, start_y_pixel, 1)
+        end_point_u, d_u = self.go_up(start_x_pixel, start_y_pixel, 1)
+        if self.width>d_r > 0 and self.height> d_u>0:
+                d = np.zeros(5)
+                d[0] = int(start_x_pixel)
+                d[1] = int(start_y_pixel)
+                d[2] = int(end_point_r[0])
+                d[3] = int(end_point_u[1])
+                end_point = []
+                end_point.append(int(d[2]))
+                end_point.append(int(d[3]))
+                d[4] = d_r + d_u
+                self.graph.append(d)
+                node_num = self.add_to_graph(start_point, end_point, node_num)
         for i in range(0, self.width-1):
-            j = 0
+            j =0 
             while(j < self.height):
                 start_point = [i, j]
-                end_point_u, d_u, mian_d = self.go_up(i, j)
+                end_point_u, d_u = self.go_up(i, j, 0)
                 if d_u > 0:
-                    d = np.zeros(5)
-                    # key_u = [start_point, end_point_u]
-                    # graph[str(key_u)] = d_u
-                    d[0] = i
-                    d[1] = j
-                    d[2] = end_point_u[0]
-                    d[3] = end_point_u[1]
-                    d[4] = d_u
-                    graph.append(d)
-                    rospy.loginfo(f"%%%%%%%%%%% : {d}")
-                    j += mian_d
-                    # start_str = str(str(i)+" "+str(j))
-                    # end_str = str(str(end_point_u[0])+ " "+str(end_point_u[1]))
-                    self.nodes[node_num] = start_point
-                    self.nodes[node_num + 1] = end_point_u
-                    self.pixel_nodes_num[str(start_point)] = node_num
-                    self.pixel_nodes_num[str(end_point_u)] = node_num + 1
-                    # end_point_r, d_r = self.go_right(d[2], d[3])
-                    node_num += 2
+                    if d_u > 1:
+                        d1 = np.zeros(5)
+                        d1[0] = i
+                        d1[1] = j
+                        d1[2] = int(end_point_u[0])
+                        d1[3] = int((end_point_u[1] + j)//2)
+                        d1[4] = int(d_u//2)
+                        start_point_1 =[]
+                        start_point_1.append(d1[0])
+                        start_point_1.append(d1[1])
+                        end_point_1 = []
+                        end_point_1.append(d1[2])
+                        end_point_1.append(d1[3])
+                        self.graph.append(d1)
+                        # rospy.loginfo(f"%%%%%%%%%%%%%%% : {(d1)}")
+                        node_num = self.add_to_graph(start_point_1, end_point_1, node_num)
+                        
+                        d2 = np.zeros(5)
+                        d2[0] = d1[2]
+                        d2[1] = d1[3]
+                        d2[2] = end_point_u[0]
+                        d2[3] = end_point_u[1]
+                        d2[4] = d_u - d1[4]
+                        start_point_2 = (d2[0], d2[1])
+                        end_point_2 = (d2[2], d2[3])
+                        self.graph.append(d2)
+                        node_num = self.add_to_graph(start_point_2, end_point_2, node_num)
 
-
+                        end_point_r, d_r = self.go_right(int(d1[2]), int(d1[3]), 0)
+                        if d_r > 0:
+                            d = np.zeros(5)
+                            d[0] = int(d1[2])
+                            d[1] = int(d1[3])
+                            d[2] = int(end_point_r[0])
+                            d[3] = int(end_point_r[1])
+                            d[4] = int(d_r)
+                            start_point_r =[]
+                            start_point_r.append(d1[0])
+                            start_point_r.append(d1[1])
+                            self.graph.append(d)
+                            node_num = self.add_to_graph(start_point_r, end_point_r, node_num)
+                        j += d_u
+                    else:
+                        d = np.zeros(5)
+                        d[0] = int(i)
+                        d[1] = int(j)
+                        d[2] = int(end_point_u[0])
+                        d[3] = int(end_point_u[1])
+                        d[4] = int(d_u)
+                        self.graph.append(d)
+                        j += d_u
+                        node_num = self.add_to_graph(start_point, end_point_u, node_num)
                 else:
                     j +=1
                 
 
 
         for j in range(0, self.height-1):
-            i = 0
+            i =0
             while(i < self.width):
                 start_point = [i, j]
-                end_point_r, d_r, mian_d = self.go_right(i, j)
+                end_point_r, d_r = self.go_right(i, j, 0)
                 if d_r > 0:
                     d = np.zeros(5)
-                    # key_r = [start_point, end_point_r]
-                    # graph[str(key_r)] = d_r
                     d[0] = i
                     d[1] = j
-                    d[2] = end_point_r[0]
-                    d[3] = end_point_r[1]
+                    d[2] = int(end_point_r[0])
+                    d[3] = int(end_point_r[1])
                     d[4] = d_r
-                    graph.append(d)
-                    rospy.loginfo(f"^^^^^^^ : {d}")
-                    i += mian_d
+                    self.graph.append(d)
+                    node_num = self.add_to_graph(start_point, end_point_r, node_num)
 
-                    # start_str = str(str(i)+" "+str(j))
-                    # end_str = str(str(end_point_r[0])+ " "+str(end_point_r[1]))
-                    if not str(start_point) in self.pixel_nodes_num:
-                        self.nodes[node_num] = start_point
-                        self.pixel_nodes_num[str(start_point)] = node_num
-                        node_num += 1 
-                    if not str(end_point_r) in self.pixel_nodes_num:
-                        self.nodes[node_num] = end_point_r
-                        self.pixel_nodes_num[str(end_point_r)] = node_num
-
-                        node_num += 1 
+                    end_point_u, d_u = self.go_up(int(d[2]), int(d[3]), 0)
+                    if d_u > 0:
+                            du = np.zeros(5)
+                            du[0] = int(d[2])
+                            du[1] = int(d[3])
+                            du[2] = int(end_point_u[0])
+                            du[3] = int(end_point_u[1])
+                            du[4] = int(d_u)
+                            start_point_u =[]
+                            start_point_u.append(du[0])
+                            start_point_u.append(du[1])
+                            self.graph.append(du)
+                            node_num = self.add_to_graph(start_point_u, end_point_u, node_num)
+                    i += d_r
                 else:
                     i+=1
                 
-        # rospy.loginfo(f"^^^^^^^^^^ : {self.pixel_nodes_num}")
+        end_point = [int(goal_x_pixel), int(goal_y_pixel)]
+        start_r, d_r = self.go_right(goal_x_pixel, goal_y_pixel, 1)
+        start_u, d_u = self.go_up(goal_x_pixel, goal_y_pixel, 1)
+        if self.width>d_r > 0 and self.height> d_u>0:
+                d = np.zeros(5)
+                d[0] = int(start_r[0])
+                d[1] = int(start_u[1])
+                d[2] = int(goal_x_pixel)
+                d[3] = int(goal_y_pixel)
+                start_point = []
+                start_point.append(int(d[0]))
+                start_point.append(int(d[1]))
+                d[4] = sqrt((d[0]-d[2])**2 + (d[1]-d[3])**2)
+                self.graph.append(d)
+                node_num = self.add_to_graph(start_point, end_point, node_num)
         g = Graph(node_num)
-        rospy.loginfo(f"%%%%%%%%%%% : {50000000000}")
-        for i in range(len(graph)):
-            start_x = int(graph[i][0])
-            start_y = int(graph[i][1])
-            end_x = int(graph[i][2])
-            end_y = int(graph[i][3])
-            cost = graph[i][4]
+        for i in range(len(self.graph)):
+            start_x = int(self.graph[i][0])
+            start_y = int(self.graph[i][1])
+            end_x = int(self.graph[i][2])
+            end_y = int(self.graph[i][3])
+            cost = self.graph[i][4]
             start = [start_x, start_y]
             end = [end_x, end_y]
             start_node_num = int(self.pixel_nodes_num[str(start)])
             end_node_num = int(self.pixel_nodes_num[str(end)])
+    
             g.add_edge(start_node_num, end_node_num, cost)
         
-        D, pq = g.dijkstra(0, {})
-        rospy.loginfo(f"&&&&&&& : {pq}")
-        return graph
+        D, self.pq = g.dijkstra(0, {})
+        rospy.loginfo(f"^^^^^^^^^^ : {(self.pq)}")
+    
+    def find_path(self, goal_x_pixel, goal_y_pixel):
+        path = []
+        goal = []
+        goal.append(int(goal_x_pixel))
+        goal.append(int(goal_y_pixel))
+        des = int(self.pixel_nodes_num[str(goal)])
+        while des != 0:
+            des = self.pq[des]
+            path.append(des)
+            print(path)
 
 
 
@@ -240,14 +337,10 @@ class Controller():
         self.cell_value = f.get_pix_value()
         self.x_goal_pixel, self.y_goal_pixel = f.get_goal_pixel(self.goal_x, self.goal_y)
         self.x_robot_pixel, self.y_robot_pixel = f.get_robot_pixel(self.start_x, self.start_y)
-        self.graph = []
-        self.graph = f.create_graph(self.x_robot_pixel, self.y_robot_pixel)
-        # rospy.loginfo(f"%%%%%%%%%%% : {self.graph}")
-        # rospy.loginfo(f"^^^^^^^^^^ : {len(self.graph)}")
+        f.create_graph(self.x_robot_pixel, self.y_robot_pixel,
+                        self.x_goal_pixel, self.y_goal_pixel)
     def run(self):
-        # print("(((((((((((((((((((((((((")
         while(1):
-            # rospy.loginfo(f"%%%%%%%%%%% : {self.start_x}")
             self.r.sleep()
         
 

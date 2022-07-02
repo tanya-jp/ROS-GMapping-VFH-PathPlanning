@@ -1,9 +1,9 @@
 <launch>
  <node pkg="final_project" type="shortest_distacnce_calculator.py" name="shortest_distacnce_calculator" output="screen" >
-  <param name="x_pos" value="0" />
-  <param name="y_pos" value="8"/>
-  <param name="goal_x" value="8.5" />
-  <param name="goal_y" value="8.5"/>
+  <param name="x_pos" value="-5" />
+  <param name="y_pos" value="-7"/>
+  <param name="goal_x" value="-4" />
+  <param name="goal_y" value="-4"/>
  </node>
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
   <arg name="x_pos" default="-8.5"/>
