@@ -173,16 +173,27 @@ class ReadMap():
         start_point = [int(start_x_pixel), int(start_y_pixel)]
         end_point_r, d_r = self.go_right(start_x_pixel, start_y_pixel, 1)
         end_point_u, d_u = self.go_up(start_x_pixel, start_y_pixel, 1)
-        if self.width>d_r > 0 and self.height> d_u>0:
+        if self.width>d_r > 0 or self.height> d_u>0:
                 d = np.zeros(5)
                 d[0] = int(start_x_pixel)
                 d[1] = int(start_y_pixel)
                 d[2] = int(end_point_r[0])
+                d[3] = int(end_point_r[1])
+                end_point = []
+                end_point.append(int(d[2]))
+                end_point.append(int(d[3]))
+                d[4] = d_r
+                self.graph.append(d)
+                node_num = self.add_to_graph(start_point, end_point, node_num)
+                d = np.zeros(5)
+                d[0] = int(start_x_pixel)
+                d[1] = int(start_y_pixel)
+                d[2] = int(end_point_u[0])
                 d[3] = int(end_point_u[1])
                 end_point = []
                 end_point.append(int(d[2]))
                 end_point.append(int(d[3]))
-                d[4] = d_r + d_u
+                d[4] = d_u
                 self.graph.append(d)
                 node_num = self.add_to_graph(start_point, end_point, node_num)
         for i in range(0, self.width-1):
@@ -286,13 +297,24 @@ class ReadMap():
         if self.width>d_r > 0 and self.height> d_u>0:
                 d = np.zeros(5)
                 d[0] = int(start_r[0])
+                d[1] = int(start_r[1])
+                d[2] = int(goal_x_pixel)
+                d[3] = int(goal_y_pixel)
+                start_point = []
+                start_point.append(int(d[0]))
+                start_point.append(int(d[1]))
+                d[4] = d_r
+                self.graph.append(d)
+                node_num = self.add_to_graph(start_point, end_point, node_num)
+                d = np.zeros(5)
+                d[0] = int(start_u[0])
                 d[1] = int(start_u[1])
                 d[2] = int(goal_x_pixel)
                 d[3] = int(goal_y_pixel)
                 start_point = []
                 start_point.append(int(d[0]))
                 start_point.append(int(d[1]))
-                d[4] = sqrt((d[0]-d[2])**2 + (d[1]-d[3])**2)
+                d[4] = d_u
                 self.graph.append(d)
                 node_num = self.add_to_graph(start_point, end_point, node_num)
         g = Graph(node_num)
@@ -321,7 +343,19 @@ class ReadMap():
         while des != 0:
             des = self.pq[des]
             path.append(des)
-            print(path)
+        print(path)
+        pixel_path = self.find_path_pixel(path)
+        return pixel_path
+    
+    def find_path_pixel(self, path):
+        pixel_path = []
+        for i in range(len(path)):
+            cur_node = path[i]
+            curr = self.nodes[cur_node]
+            pixel_path.append(curr)
+        print(pixel_path)
+        return pixel_path
+
 
 
 
@@ -339,6 +373,7 @@ class Controller():
         self.x_robot_pixel, self.y_robot_pixel = f.get_robot_pixel(self.start_x, self.start_y)
         f.create_graph(self.x_robot_pixel, self.y_robot_pixel,
                         self.x_goal_pixel, self.y_goal_pixel)
+        f.find_path(self.x_goal_pixel, self.y_goal_pixel)
     def run(self):
         while(1):
             self.r.sleep()
