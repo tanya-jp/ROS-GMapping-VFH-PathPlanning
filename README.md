@@ -11,5 +11,4 @@ This project is written using `rospy` and uses the turtlebot in gazebo. It has 3
 ![Screenshot from 2022-10-11 00-10-42](https://user-images.githubusercontent.com/44570354/194949117-e2cf4d0b-b16f-4a56-a31d-391f63b87f8e.png)
 
 3. Local path planning & Global path planning  
-4. 
 
