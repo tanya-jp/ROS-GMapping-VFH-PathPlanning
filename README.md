@@ -10,7 +10,7 @@ This project is written using `rospy` and uses the turtlebot in gazebo. It has 3
 2. Heading towards an end point using `VFH (Vector Field Histogram)` for avoiding obstacles and finding the way:
 ![Screenshot from 2022-10-11 00-10-42](https://user-images.githubusercontent.com/44570354/194949117-e2cf4d0b-b16f-4a56-a31d-391f63b87f8e.png)
 
-3. Finding the shortest path from starting point to the goal by making a graph using the saved map of the first part and `Dijkstra's algorithm`.
+3. Finding the shortest path from starting point to the goal by making a graph of the saved map of the first part and using `Dijkstra's algorithm`.
 - Found nodes of the graph:
   <p align="left">
     <img src="https://user-images.githubusercontent.com/72709191/195307850-45625744-4da5-4c7b-9cad-a6b2e2650a28.JPG" width=70% height=70%/>
